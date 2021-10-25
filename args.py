@@ -10,6 +10,7 @@ def get_args():
     parser.add_argument('--seed', default=42, type=int, help='seed')
 
     parser.add_argument('--exp_name', default='default', type=str, help='name of the experiments')
+    parser.add_argument('--agent_path', default='default', type=str, help='path for agent model')
     parser.add_argument('--resume_path', default=None, type=str, help='path to the weights of experiment')
     parser.add_argument('--problem', default='mvc', type=str, help='name of the experiments', choices=['mvc'])
     parser.add_argument('--random_graph_type', default='erdos_renyi', type=str, help='type of random graph generation')
@@ -27,6 +28,7 @@ def get_args():
     parser.add_argument('--hidden-dim', default=128, type=int, help='hidden dimension')
     parser.add_argument('--p', default=0.15, type=float, help='probability of edge connectivity')
     parser.add_argument('--debug', default=False, action='store_true')
+    parser.add_argument('--verbose', default=False, action='store_true')
     parser.add_argument('--lr', default=0.001, type=float, help='learning rate')
 
     args = parser.parse_args()
