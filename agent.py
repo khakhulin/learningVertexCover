@@ -22,7 +22,6 @@ class Agent(nn.Module):
         for layer in self.conv_layers:
             x = layer(x, edge_index)
             x = F.relu(x)
-            x = F.dropout(x, training=self.training)
         mean_val = global_mean_pool(x, torch.zeros(x.size()[0], device=self.device, dtype=torch.long))
         proba = self.policy(x)
         value = self.value(mean_val)

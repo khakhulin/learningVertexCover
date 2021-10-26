@@ -16,17 +16,18 @@ def get_args():
     parser.add_argument('--random_graph_type', default='erdos_renyi', type=str, help='type of random graph generation')
     parser.add_argument('--reset_fix', default=False, action='store_true')
 
-    parser.add_argument('--num_epochs', default=4, type=int, help='num of training epochs')
-    parser.add_argument('--print_every', default=1, type=int, help='print train information')
-    parser.add_argument('--save_agent_every', default=10, type=int, help='save agent every % epochs')
+    parser.add_argument('--num_iters', default=4, type=int, help='num of training epochs')
+    parser.add_argument('--print_every', default=10, type=int, help='print train information')
+    parser.add_argument('--save_agent_every', default=100, type=int, help='save agent every % epochs')
 
-    parser.add_argument('--n', default=45, type=int, help='num of the nodes')
+    parser.add_argument('--n', default=0, type=int, help='num of the nodes')
 
-    parser.add_argument('--min_n', default=45, type=int, help='min num of the nodes')
-    parser.add_argument('--max_n', default=45, type=int, help='max num of the nodes')
+    parser.add_argument('--use_discount_reward', default=True, type=bool)
+    parser.add_argument('--min_n', default=30, type=int, help='min num of the nodes')
+    parser.add_argument('--max_n', default=100, type=int, help='max num of the nodes')
 
-    parser.add_argument('--hidden-dim', default=128, type=int, help='hidden dimension')
-    parser.add_argument('--p', default=0.15, type=float, help='probability of edge connectivity')
+    parser.add_argument('--hidden-dim', default=256, type=int, help='hidden dimension')
+    parser.add_argument('--p', default=0.05, type=float, help='probability of edge connectivity')
     parser.add_argument('--debug', default=False, action='store_true')
     parser.add_argument('--verbose', default=False, action='store_true')
     parser.add_argument('--lr', default=0.001, type=float, help='learning rate')

@@ -10,7 +10,8 @@ import time
 from copy import deepcopy as dc
 import networkx as nx
 import numpy as np
-import matplotlib.pyplot as plt
+import tqdm
+#import matplotlib.pyplot as plt
 from torch_geometric.utils import to_networkx, from_networkx
 
 args = get_args()
@@ -33,8 +34,8 @@ def test_problem(args, agent):
     problem = VertexCover(num_nodes, p_edge)
     _G, actions, rewards, retime = run_agent(problem, agent)
     real_score, agent_score = len(problem.mvc), len(actions)
-    heuristic_result = Result(score=real_score, vertices=problem.mvc)
-    agent_result = Result(score=agent_score, vertices=actions)
+    heuristic_result = real_score
+    agent_result = agent_score
     return _G, heuristic_result, agent_result, retime
 
 
@@ -65,7 +66,6 @@ def run_agent(env, agent):
         worst_cost = np.maximum(worst_cost, reward.item())
         if done:
             reward = -torch.tensor(worst_cost)
-            print(worst_cost)
 
         rewards.append(reward.item())
         actions.append(action.item())
@@ -79,29 +79,32 @@ num_nodes = args.n
 p_edge = args.p
 draw_graph = args.verbose
 
-env = VertexCover(num_nodes, p_edge)
-
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 agent_mvc = Agent(2, args.hidden_dim, device=device).to(device)
+agent_mvc.load_state_dict(torch.load(f'{args.exp_name}.pth'))
 
-agent_mvc.load_state_dict(torch.load(args.agent_path))
-_G, heuristic_result, agent_result, res_time = test_problem(env, agent_mvc)
-# _G, actions, rewards, retime = run_agent(env, agent_mvc)
-# node_tag = state.g['x'][:, 0].cpu().squeeze().numpy().tolist()
+heuristic_result_scores = []
+agent_result_scores = []
 
-# actions = env.mvc
-print_gt = True
-num_nodes = _G.number_of_nodes()
-actions = agent_result.vertices
-set_vertices = set(actions) if not print_gt else set(env.mvc)
-# node_tag = [-1 if ij in set_vertices else 0 for ij in range()]
-not_mvc_list = [i for i in range(num_nodes) if i not in set_vertices]
-g = _G
-pos = nx.spiral_layout(_G.to_undirected())
-if args.verbose:
-    print(f'Heuristic Score: {heuristic_result.score}, Agent Score {agent_result.score}')
-g = _G.to_undirected()
-if draw_graph:
-    gr_for_print = PrintGraph(graph=g, pos=pos, mvc=list(set_vertices), not_mvc=not_mvc_list)
-    print_graph(gr_for_print)
-    exit()
+for num_nodes in range(args.min_n, args.max_n):
+    heuristic_result_scores_n = []
+    agent_result_scores_n = []
+    for i in tqdm.tqdm(range(5)):
+        env = VertexCover(num_nodes, p_edge, args.random_graph_type)
+        _G, heuristic_result, agent_result, res_time = test_problem(env, agent_mvc)
+
+        heuristic_result_scores_n.append(heuristic_result)
+        agent_result_scores_n.append(agent_result)
+    
+    heuristic_result_scores.append(heuristic_result_scores_n)
+    agent_result_scores.append(agent_result_scores_n)
+
+    heuristic_result_scores_n = np.asarray(heuristic_result_scores_n)
+    agent_result_scores_n = np.asarray(agent_result_scores_n)
+    print(f'Num nodes: {num_nodes}, heuristic score: {heuristic_result_scores_n.mean()}, agent score {agent_result_scores_n.mean()}')
+
+heuristic_result_scores = np.asarray(heuristic_result_scores)
+agent_result_scores = np.asarray(agent_result_scores)
+
+np.save(f'logs/{args.exp_name}_heuristic.npy', heuristic_result_scores)
+np.save(f'logs/{args.exp_name}_agent.npy', agent_result_scores)

@@ -47,7 +47,7 @@ class BasicEnv:
         if one_hot:
             deg = F.one_hot(indeg, num_classes=max_degree + 1).to(torch.float)
         else:
-            deg = indeg.unsqueeze(1) / indeg.max()
+            deg = ((outdeg + indeg) / gp.num_nodes)[:, None]
         gp['x'] = torch.cat((torch.zeros((max_degree, 1), dtype=torch.float), deg), dim=1)
         visited = torch.zeros(max_degree)
         deg = torch_geometric.utils.degree(gp.edge_index[0], gp.num_nodes)
@@ -85,7 +85,8 @@ class VertexCover(BasicEnv):
         is_done = False
         state.g['x'][action, 0] = 1.0 - state.g['x'][action, 0]
         state.visited_node[action.item()] = 1.0
-        reward = torch.tensor(-1., dtype=torch.float32)
+        # reward = torch.tensor(-1., dtype=torch.float32)
+        reward = -1 * state.visited_node.sum().to(torch.float32)
         edge_visited = torch.cat((state.visited_node[state.g.edge_index[0]].unsqueeze(-1),
                                   state.visited_node[state.g.edge_index[1]].unsqueeze(-1)),
                                  dim=1).max(dim=1)[0]
